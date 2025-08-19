@@ -149,6 +149,9 @@ dt_base <- merge(dt_base, dt_vix, by = "date", all.x = T)
 
 dt_base[, table(is.na(close_vix))]
 
+
+setorder(dt_base, date)
+
 ## 2.6 Attach Macroeconomic columns ----
 # Yield Curve Slope = 10-year Treasury yield minus 3-month Treasury yield
 # Measures the steepness of the yield curve.
@@ -166,6 +169,14 @@ dt_base[, credit_spread := corp_bond_yield - us_10y_yield]
 macro_vars <- c("yield_curve_slope", "credit_spread",
                 "num_unempl_claims", "num_permits", "close_vix", 
                 "gold", "copper", "gold_copper_rel")
+
+# NOTE: In this prototype we standardize the macro indicators and run PCA 
+# on the full sample. This is fine for exploration, but in a strict backtest 
+# it introduces look-ahead bias (because the mean/sd and PCA loadings use 
+# future information). 
+# A production-grade version should recompute normalization and PCA loadings 
+# on an expanding (or rolling) window so that, at each point in time, only 
+# data available up to t-1 is used.
 
 for (v in macro_vars) {
   if (v %in% c("credit_spread",
@@ -277,4 +288,4 @@ ggplot(dt_long, aes(x = date, y = value, color = indicator,
 # to market setiment (i.e. high macro trend / indicator --> high Risk and vice
 # versa).
 
-fwrite(dt_base, paste0(path_02, "style_ind_incl_maro.csv"))
+fwrite(dt_base, paste0(path_02, "style_ind_incl.csv"))
