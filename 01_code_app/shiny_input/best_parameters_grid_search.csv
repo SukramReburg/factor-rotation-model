@@ -1,0 +1,2 @@
+macro_type,high_risk_th,nudge_val,nudge_mom,hi_Value,hi_Quality,hi_MinVol,lo_Value,lo_Quality,lo_MinVol,Sharpe
+trend,0,0,0,0.05,0.35,0.6,0.7,0.25,0.05,-3.03692785352614

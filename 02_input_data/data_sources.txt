@@ -1,0 +1,5 @@
+data sources for added input data: 
+Moody's Seasoned Baa Corporate Bond Yield: https://fred.stlouisfed.org/data/BAA
+Unemployment Insurance Weekly Claims Report: https://fred.stlouisfed.org/data/ICSA
+New Privately-Owned Housing Units Authorized in Permit-Issuing Places: Total Units (in thsd.): https://fred.stlouisfed.org/data/PERMIT
+CBOE VIX (Volatility Index): https://datahub.io/core/finance-vix/r/vix-daily.csv
