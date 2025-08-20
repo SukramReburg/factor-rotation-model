@@ -1,4 +1,11 @@
+# The Vaulation could be done with the EPS per style from the iShares USMV, 
+# QUAL, VLUE. As it is not feasible to scrape this data within the project time-
+# line, resp. without any premium subscription.
+# 0. Set up Environment ----
+
+# Define necessary packages
 library(data.table)
+library(stringr)
 
 # 0. Helper: per-row comp scores from your signals ----
 compose_comp_scores <- function(x,
