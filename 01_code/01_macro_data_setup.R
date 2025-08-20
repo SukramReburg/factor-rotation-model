@@ -260,12 +260,15 @@ plot_trend_fits(y, fits, df_final, df_val = df_final)
 beta_hat <- fits$`df=5`
 
 # 5. Add to the data.table
+
 dt_base[, macro_trend := as.numeric(beta_hat)]
+
+# As interpolation is only done except in the last ad first interpolation 
+# interval we need to extrapolate these intervals. 
+
 dt_base[, macro_trend := fill_trend_edges(y = y, trend = macro_trend)]
 
 
-# As interpolation is only done except in the last ad first interpolation 
-# interval we need to extraploate these intervals. 
 
 dt_long <- melt(
   dt_base,

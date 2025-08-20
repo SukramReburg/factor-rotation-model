@@ -392,6 +392,30 @@ momentum_pillar <- function(dt,
   return(dt)
 }
 
+
+interval_grid <- function(interval){
+  grid_list <- list()
+  step_size <- 0.2  # small increment
+  idx <- 1
+  
+  for (alpha in seq(0, 1, by = step_size)) {
+    # Convex combination of the two sets
+    w <- (1 - alpha) * interval[[1]] + alpha * interval[[2]]
+    
+    # Sanity check (floating point rounding may cause slight deviation)
+    w <- w / sum(w)
+    
+    grid_list[[idx]] <- w
+    idx <- idx + 1
+  }
+  
+  # Convert to data.frame for inspection
+  dt_grid <- as.data.table(do.call(rbind, grid_list))
+  
+  return(dt_grid)
+  
+}
+
 #' Build Composite Momentum Scores from Horizon Z-Scores
 #'
 #' Aggregates horizon-specific z-scores into a composite momentum score per style,
@@ -471,4 +495,91 @@ build_momentum_composite <- function(dt,
        .SDcols = comp_cols]
   }
   return(dt)
+}
+
+# main grid-search wrapper
+grid_search_regime <- function(dt_data,
+                               cost_bps = 5,
+                               macro_types = c("indicator", "trend", "trend_corr"),
+                               thr_indicator = seq(-1.0, 1.0, by = 0.2),
+                               # for z-scored trend
+                               nudge_val_grid = c(0.00, 0.20),
+                               nudge_mom_grid = c(0.00, 0.15),
+                               base_hi_opts = .base_hi_opts,
+                               base_lo_opts = .base_lo_opts) {
+  out <- vector("list", 1024)
+  k <- 0L
+  
+  dt_grid_hi <- interval_grid(base_hi_opts)
+  dt_grid_lo <- interval_grid(base_lo_opts)
+  
+  length_loop <- nrow(dt_grid_hi)*2*length(macro_types)*length(thr_indicator)*4
+  count = 1
+  for (mt in macro_types) {
+    # choose which macro signal drives the regime split
+    dt_use <- copy(dt_data)
+    if (mt == "trend")
+      dt_use[, macro_indicator := macro_trend]
+    if (mt == "trend_corr")
+      dt_use[, macro_indicator := macro_trend_corr]
+    
+    thr_grid <- thr_indicator
+    
+    for (thr in thr_grid) {
+      for (ih in 1:nrow(dt_grid_hi)) {
+        for (il in 1:nrow(dt_grid_lo)) {
+          
+          cat("Loop step ", count, " of ", length_loop, ". \n")
+          count = count + 1
+
+          hi <- as.numeric(dt_grid_hi[ih, ])
+          names(hi) <- names(dt_grid_hi)
+          lo <- as.numeric(dt_grid_lo[il, ])
+          names(lo) <- names(dt_grid_lo)
+          
+          # safety: ensure proper sums
+          if (abs(sum(hi) - 1) > 1e-8 ||
+              abs(sum(lo) - 1) > 1e-8)
+            next
+          # Avoid unnecessary calculations.
+          if (hi["MinVol"] < lo["MinVol"] | 
+              lo["Value"] < hi["Value"])
+            next
+          
+          for (nv in nudge_val_grid) {
+            for (nm in nudge_mom_grid) {
+              bt <- backtest_all(
+                dt_use,
+                cost_bps   = cost_bps,
+                base_hi    = hi,
+                base_lo    = lo,
+                nudge_val  = nv,
+                nudge_mom  = nm,
+                high_risk_th = thr
+              )
+              
+              sharpe <- bt$perf[Strategy == "Regime", Sharpe]
+              k <- k + 1L
+              out[[k]] <- data.table(
+                macro_type = mt,
+                high_risk_th = thr,
+                nudge_val = nv,
+                nudge_mom = nm,
+                hi_Value = hi["Value"],
+                hi_Quality = hi["Quality"],
+                hi_MinVol = hi["MinVol"],
+                lo_Value = lo["Value"],
+                lo_Quality = lo["Quality"],
+                lo_MinVol = lo["MinVol"],
+                Sharpe = sharpe
+              )
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  leaderboard <- rbindlist(out[seq_len(k)], use.names = TRUE, fill = TRUE)[order(-Sharpe)]
+  list(best = leaderboard[1], leaderboard = leaderboard)
 }
