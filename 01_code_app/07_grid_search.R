@@ -20,22 +20,10 @@ load_packages(pkgs)
 dt_base <- fread(paste0(path_02, "style_ind_incl.csv"))
 
 dt_model <- dt_base[, .(
-  date,
-  msci_usa,
-  us_10y_yield,
-  msci_usa_value,
-  msci_usa_quality,
-  msci_usa_minvol,
-  macro_indicator,
-  macro_trend,
-  msci_usa_value_mom,
-  msci_usa_quality_mom,
-  msci_usa_minvol_mom,
-  mom_leader,
-  val_score,
-  val_adj_value,
-  val_adj_quality,
-  val_adj_minVol
+  date, msci_usa, msci_usa_value, msci_usa_quality, msci_usa_minvol, 
+  us_10y_yield = us_10y_yield/(100*12), macro_indicator, macro_trend,
+  msci_usa_value_mom, msci_usa_quality_mom, msci_usa_minvol_mom, mom_leader,
+  val_score, val_adj_value, val_adj_quality, val_adj_minVol
 )]
 
 # Observation: Macro trend is drifting with a negative constant. Maybe
