@@ -6,18 +6,16 @@
 # 4) Regime Optimization (grid search results)
 # 5) Results & Dashboard (tables, equity curves, drawdowns, weights, current style)
 
-source("./00_function_pool.R")
-
 # Define necessary packages
-pkgs <- c(data.table = "1.15.0", shiny = "1.8.0", shinyWidgets = "0.9.0", 
-          bslib = "0.6.1", ggplot2 = "3.5.0", plotly = "4.10.4", DT = "0.33",
-          stringr = "1.5.1")
+library(data.table)     # v1.15.0
+library(shiny)          # v1.8.0
+library(shinyWidgets)   # v0.9.0
+library(bslib)          # v0.6.1
+library(ggplot2)        # v3.5.0
+library(plotly)         # v4.10.4
+library(DT)             # v0.33
+library(stringr)        # v1.5.1
 
-# Check if all packages are installed with the correct versions.
-check_packages(pkgs)
-
-# Load all necessary packages.
-load_packages(pkgs)
 
 # Helper: minimalist plot theme
 theme_min <- theme_minimal(base_size = 12) +
