@@ -1,7 +1,7 @@
 # 0. Set up Environment ----
 rm(list = ls())
 
-source("./01_code/00_initialize.R")
+source("./01_code_app/00_initialize.R")
 
 # Define necessary packages
 pkgs <- c(data.table = "1.15.0", openxlsx2 = "1.18", lubridate = "1.9.3", stringr = "1.5.1", 
